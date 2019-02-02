@@ -4,10 +4,10 @@
 <!DOCTYPE html>
 <head>
 <meta charset="utf-8">
-<title>Pandas D3 Force Directed Example - www.austintaylor.io</title>
+<title>salted-network</title>
 
 <!-- JavaScript Libraries //-->
-<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="d3.v3.min.js"></script>
 
 <!-- CSS Style //-->
 <link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,900|Source+Code+Pro:300" rel="stylesheet" type="text/css">
@@ -15,6 +15,26 @@
 body {
     font-family: 'Source Sans Pro', sans-serif;
     font-weight: 300;
+    background:rgb(238, 238, 238);
+}
+#info_bg,#info_box {
+    width:30%;
+    height:;
+    padding:2%;
+    display:inline;
+    margin:3% 0% 0% 1%;
+    background:transparent;
+    position:absolute;
+    border:0px solid green;
+}
+#info_support_box,#info_require_box {
+    font-family:Sans;
+    font-size:15px;
+    font-weight:100;
+    color:#1d1d1d;
+}
+ul li {
+    margin:5px 0px;
 }
 
 b {
@@ -169,7 +189,7 @@ function drawNodes(nodes) {
         .attr("id", function(d, i) { return d.name; })
         .attr("cx", function(d, i) { return d.x; })
         .attr("cy", function(d, i) { return d.y; })
-        .attr("r",  function(d, i) { return 8; })
+        .attr("r",  function(d, i) { return 6; })
         .style("fill",   function(d, i) { return color(d.group); })
         .on("mouseover", function(d, i) { addTooltip(d3.select(this)); })
         .on("mouseout",  function(d, i) { d3.select("#tooltip").remove(); });
@@ -180,7 +200,7 @@ function drawLinks(links) {
         .domain(d3.extent(links, function(d, i) {
            return d.value;
         }))
-        .range([1, 6]);
+        .range([1, 20]);
     // https://github.com/mbostock/d3/wiki/Force-Layout#wiki-links
     d3.select("#plot").selectAll(".link")
         .data(links)
@@ -198,14 +218,180 @@ function drawLinks(links) {
             return (d.value <= 1) ? "5, 5" : "none";
         });
 }
+    
+var dependency_map = { };
+function parseInfo(graph){
+    console.log("inside parseInfo. graph:",graph.nodes.length);
+    var node_list = [];
+    
+    for (var node_idx=0;node_idx < graph.nodes.length;node_idx++){
+        dependency_map[graph.nodes[node_idx]["name"]] =  {"parents":[],"children":[]}
+        node_list[ node_idx ] = graph.nodes[node_idx]["name"];
+        }
+    console.log(dependency_map)
+    var target,source;
+    for (var link_idx=0;link_idx < graph.links.length;link_idx++){
+        source_idx = graph.links[link_idx]["source"];
+        target_idx = graph.links[link_idx]["target"];
+        source = node_list[source_idx];
+        target = node_list[target_idx];
+        
+        if(link_idx < 10){
+            //console.log("target:",target," - src:",source)
+        }            
+        dependency_map[source]["children"].push(target);
+        dependency_map[target]["parents"].push(source);
+        console.log("pushing source for:",target);
+
+    }    
+    console.log(dependency_map);
+}
+
+
+var elementClick = false;
+function closeInfo(){
+    console.log("inside body click");
+    if(!elementClick){
+        console.log("click on screen"); 
+        document.getElementById("info_box").style.visibility="hidden";   
+        document.getElementById("info_require_box").style.visibility="hidden";
+        document.getElementById("info_support_box").style.visibility="hidden";    
+    }
+    else{
+        console.log("click on element");
+        //document.getElementById("info_box").style.visibility="visible";   
+        //document.getElementById("info_require_box").style.visibility="visible";
+        //document.getElementById("info_support_box").style.visibility="visible"; 
+        elementClick = false;
+        }
+}
 </script>
 </head>
 
 <body>
+
+
+<div id="info_box" style="color:#3d3d3d;font-size:15px;font-family:;">
+    <center>
+        <strong><b id="info_title">title</b></strong>
+        <hr>
+    </center>
+    <fieldset id="info_require_box">
+    <legend>Depends on:</legend>
+        <ul id="info_require">
+
+        </ul>
+    </fieldset>
+    <fieldset id="info_support_box">
+    <legend>Requirement for:</legend>
+        <ul id="info_support">
+
+        </ul>
+    </fieldset>
+</div>
 <div align="center" id="force"></div>
 
 <script>
-d3.json("valid_data_d3.json", drawGraph);
+    d3.json("valid_data_d3.json", drawGraph);
+    d3.json("valid_data_d3.json", parseInfo);
+</script>
+<script>
+    window.onload = function(){
+    
+    document.body.addEventListener('click', closeInfo, true); 
+    
+    var circles = document.getElementsByTagName("circle");
+    var curr_circle; 
+    var rand_idx = Math.round(Math.random()*circles.length);
+
+    //console.log("found circles count:",circles.length);
+    for (var c_idx =0;c_idx < circles.length;c_idx++){
+        curr_circle = circles[c_idx];
+        //console.log("added event to circle:",curr_circle);
+        
+        curr_circle.addEventListener("click", function(e){
+            elementClick = true;
+            document.getElementById("info_box").style.visibility="visible";       
+
+            console.log(e);
+            var info_box = document.getElementById("info_box"),
+                info_box_bg = document.getElementById("info_bg"),
+                info_title = document.getElementById("info_title"),
+                info_support = document.getElementById("info_support"),
+                info_require = document.getElementById("info_require");
+                
+                info_title.innerHTML = e.target.id;
+                console.log("event for:",e.target.id);
+                info_require.innerHTML = ""//dependency_map[e.target.id]["children"];
+                info_support.innerHTML = ""//dependency_map[e.target.id]["parents"];
+                child_list = dependency_map[e.target.id]["children"];
+                parent_list =  dependency_map[e.target.id]["parents"];
+                console.log("parent and child length:",child_list.length,parent_list.length);
+                if(child_list.length < 1)
+                    document.getElementById("info_require_box").style.visibility="hidden";                    
+                else
+                    document.getElementById("info_require_box").style.visibility="visible";
+
+                if(parent_list.length < 1)
+                    document.getElementById("info_support_box").style.visibility="hidden";
+                else
+                    document.getElementById("info_support_box").style.visibility="visible";
+                    
+                for (var c_id=0;c_id<child_list.length;c_id++){
+                    var li_e = document.createElement("li");
+                    var node = document.createTextNode(child_list[c_id]);
+                    li_e.appendChild(node);
+                    info_require.appendChild(li_e);
+                }
+                for (var p_id=0;p_id<parent_list.length;p_id++){
+                    var li_e = document.createElement("li");
+                    var node = document.createTextNode(parent_list[p_id]);
+                    li_e.appendChild(node);
+                    info_support.appendChild(li_e);
+                }                
+                console.log(dependency_map[e.target.id]);
+                }); 
+                
+                if(c_idx == rand_idx){
+                    var info_box = document.getElementById("info_box"),
+                    info_box_bg = document.getElementById("info_bg"),
+                    info_title = document.getElementById("info_title"),
+                    info_support = document.getElementById("info_support"),
+                    info_require = document.getElementById("info_require");
+                    
+                    info_title.innerHTML = curr_circle.id;    
+                    
+                    child_list = dependency_map[curr_circle.id]["children"];
+                    parent_list =  dependency_map[curr_circle.id]["parents"];
+                
+                    if(child_list.length < 1)
+                        document.getElementById("info_require_box").style.visibility="hidden";                    
+                    else
+                        document.getElementById("info_require_box").style.visibility="visible";
+
+                    if(parent_list.length < 1)
+                        document.getElementById("info_support_box").style.visibility="hidden";
+                    else
+                        document.getElementById("info_support_box").style.visibility="visible";
+                        
+                    for (var c_id=0;c_id<child_list.length;c_id++){
+                        var li_e = document.createElement("li");
+                        var node = document.createTextNode(child_list[c_id]);
+                        li_e.appendChild(node);
+                        info_require.appendChild(li_e);
+                    }
+                    for (var p_id=0;p_id<parent_list.length;p_id++){
+                        var li_e = document.createElement("li");
+                        var node = document.createTextNode(parent_list[p_id]);
+                        li_e.appendChild(node);
+                        info_support.appendChild(li_e);
+                    }                
+                    
+                
+                }
+        }
+
+    }
 </script>
 </body>
 </html>
