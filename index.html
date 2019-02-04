@@ -34,7 +34,15 @@ body {
     color:#1d1d1d;
 }
 ul li {
+    color:#1d1d1d;
     margin:5px 0px;
+    transition:all 0.3s;
+}
+
+li:hover {
+    color:#7575EA;
+    transition:all 0.5s;
+
 }
 
 b {
@@ -342,12 +350,28 @@ function closeInfo(){
                     var node = document.createTextNode(child_list[c_id]);
                     li_e.appendChild(node);
                     info_require.appendChild(li_e);
+                    li_e.addEventListener("click", function(li_e){
+                        console.log(li_e);
+                        var child_id = li_e.innerHTML;
+                        var circle_ele = document.getElementById(child_id);
+                        
+                        //add code to highlight element "circle_ele" which is child element
+                        
+                    }
                 }
                 for (var p_id=0;p_id<parent_list.length;p_id++){
                     var li_e = document.createElement("li");
                     var node = document.createTextNode(parent_list[p_id]);
                     li_e.appendChild(node);
                     info_support.appendChild(li_e);
+                    li_e.addEventListener("click", function(li_e){
+                        console.log(li_e);
+                        var child_id = li_e.innerHTML;
+                        var circle_ele = document.getElementById(child_id);
+                        
+                        //add code to highlight element "circle_ele" which is child element
+                        
+                    }
                 }                
                 console.log(dependency_map[e.target.id]);
                 }); 
@@ -379,12 +403,29 @@ function closeInfo(){
                         var node = document.createTextNode(child_list[c_id]);
                         li_e.appendChild(node);
                         info_require.appendChild(li_e);
+                        li_e.addEventListener("click", function(li_e){
+                            console.log(li_e);
+                            var child_id = li_e.innerHTML;
+                            var circle_ele = document.getElementById(child_id);
+                            
+                            //add code to highlight element "circle_ele" which is child element
+                        
+                            }
                     }
                     for (var p_id=0;p_id<parent_list.length;p_id++){
                         var li_e = document.createElement("li");
                         var node = document.createTextNode(parent_list[p_id]);
                         li_e.appendChild(node);
                         info_support.appendChild(li_e);
+                        li_e.addEventListener("click", function(li_e){
+                            console.log(li_e);
+                            var child_id = li_e.innerHTML;
+                            var circle_ele = document.getElementById(child_id);
+                            
+                            //add code to highlight element "circle_ele" which is child element
+                            
+                        }
+                   
                     }                
                     
                 
